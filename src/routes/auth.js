@@ -3,7 +3,25 @@ const bcrypt = require('bcrypt');
 const { pool } = require('../db');
 const router = express.Router();
 
-// existing signup stays here...
+router.post('/signup', async (req, res) => {
+  const { email, password } = req.body;
+  if (!email || !password) return res.status(400).json({ error: 'Email and password required' });
+  if (password.length < 8) return res.status(400).json({ error: 'Password must be at least 8 characters' });
+
+  try {
+    const hash = await bcrypt.hash(password, 10);
+    const { rows } = await pool.query(
+      'insert into users (email, password_hash) values ($1, $2) returning id, email',
+      [email, hash]
+    );
+    req.session.user = { id: rows[0].id, email: rows[0].email };
+    res.status(201).json({ message: 'Signed up', user: req.session.user });
+  } catch (err) {
+    if (err.code === '23505') return res.status(409).json({ error: 'Email already registered' });
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
 
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;

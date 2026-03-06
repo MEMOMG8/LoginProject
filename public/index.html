@@ -1,23 +1,126 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Auth Demo</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: #111827;
+      --accent: #38bdf8;
+      --text: #e5e7eb;
+      --muted: #94a3b8;
+      --radius: 10px;
+    }
+    body {
+      font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+      background: radial-gradient(circle at 10% 20%, #1e293b 0%, #0f172a 40%, #0b1222 100%);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 32px;
+    }
+    .card {
+      width: min(700px, 100%);
+      background: var(--panel);
+      border: 1px solid #1f2937;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+      padding: 28px;
+      border-radius: var(--radius);
+    }
+    h1 {
+      margin: 0 0 16px;
+      font-size: 24px;
+      letter-spacing: 0.5px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr auto;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    input {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 1px solid #1f2937;
+      background: #0b1222;
+      color: var(--text);
+    }
+    input::placeholder { color: var(--muted); }
+    button {
+      border: none;
+      border-radius: 8px;
+      padding: 10px 16px;
+      background: var(--accent);
+      color: #0b1222;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 120ms ease, box-shadow 120ms ease;
+      box-shadow: 0 10px 30px rgba(56, 189, 248, 0.35);
+    }
+    button:hover { transform: translateY(-1px); }
+    .row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    pre {
+      margin: 0;
+      background: #0b1222;
+      border: 1px solid #1f2937;
+      border-radius: 8px;
+      padding: 12px;
+      min-height: 90px;
+      color: #a5f3fc;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+    .hint { color: var(--muted); margin-bottom: 12px; }
+  </style>
+</head>
 <body>
-  <h1>Auth Demo</h1>
-  <form id="signup">
-    <input name="email" placeholder="email"><input name="password" placeholder="password" type="password">
-    <button>Sign Up</button>
-  </form>
-  <form id="login">
-    <input name="email" placeholder="email"><input name="password" placeholder="password" type="password">
-    <button>Log In</button>
-  </form>
-  <button id="me">Who am I?</button>
-  <button id="logout">Log Out</button>
-  <pre id="out"></pre>
+  <div class="card">
+    <h1>Auth Demo</h1>
+    <div class="hint">Use any email + password (≥8 chars). Results show below.</div>
+    <form id="signup" class="grid">
+      <input name="email" placeholder="email" autocomplete="email">
+      <input name="password" placeholder="password (min 8 chars)" type="password" autocomplete="new-password">
+      <button>Sign Up</button>
+    </form>
+    <form id="login" class="grid">
+      <input name="email" placeholder="email" autocomplete="email">
+      <input name="password" placeholder="password" type="password" autocomplete="current-password">
+      <button>Log In</button>
+    </form>
+    <div class="row">
+      <button id="me">Who am I?</button>
+      <button id="logout">Log Out</button>
+    </div>
+    <pre id="out">{ "status": "Try signup or login" }</pre>
+  </div>
 <script>
-const out = txt => document.getElementById('out').textContent = JSON.stringify(txt, null, 2);
-const post = (url, data) => fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)}).then(r=>r.json());
-document.getElementById('signup').onsubmit = e => {e.preventDefault();post('/auth/signup', Object.fromEntries(new FormData(e.target))).then(out);};
-document.getElementById('login').onsubmit = e => {e.preventDefault();post('/auth/login', Object.fromEntries(new FormData(e.target))).then(out);};
+const outEl = document.getElementById('out');
+const out = txt => outEl.textContent = JSON.stringify(txt, null, 2);
+const post = (url, data) =>
+  fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data) })
+    .then(async r => {
+      const json = await r.json().catch(() => ({ error: 'Non-JSON response', status: r.status }));
+      return json;
+    })
+    .catch(err => ({ error: err.message }));
+
+document.getElementById('signup').onsubmit = e => {
+  e.preventDefault();
+  post('/auth/signup', Object.fromEntries(new FormData(e.target))).then(out);
+};
+document.getElementById('login').onsubmit = e => {
+  e.preventDefault();
+  post('/auth/login', Object.fromEntries(new FormData(e.target))).then(out);
+};
 document.getElementById('logout').onclick = () => post('/auth/logout',{}).then(out);
 document.getElementById('me').onclick = () => fetch('/me').then(r=>r.json()).then(out);
 </script>
