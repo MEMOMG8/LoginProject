@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<body>
+  <h1>Auth Demo</h1>
+  <form id="signup">
+    <input name="email" placeholder="email"><input name="password" placeholder="password" type="password">
+    <button>Sign Up</button>
+  </form>
+  <form id="login">
+    <input name="email" placeholder="email"><input name="password" placeholder="password" type="password">
+    <button>Log In</button>
+  </form>
+  <button id="me">Who am I?</button>
+  <button id="logout">Log Out</button>
+  <pre id="out"></pre>
+<script>
+const out = txt => document.getElementById('out').textContent = JSON.stringify(txt, null, 2);
+const post = (url, data) => fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)}).then(r=>r.json());
+document.getElementById('signup').onsubmit = e => {e.preventDefault();post('/auth/signup', Object.fromEntries(new FormData(e.target))).then(out);};
+document.getElementById('login').onsubmit = e => {e.preventDefault();post('/auth/login', Object.fromEntries(new FormData(e.target))).then(out);};
+document.getElementById('logout').onclick = () => post('/auth/logout',{}).then(out);
+document.getElementById('me').onclick = () => fetch('/me').then(r=>r.json()).then(out);
+</script>
+</body>
+</html>
