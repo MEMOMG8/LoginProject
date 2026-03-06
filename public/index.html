@@ -115,11 +115,13 @@ const post = (url, data) =>
 
 document.getElementById('signup').onsubmit = e => {
   e.preventDefault();
-  post('/auth/signup', Object.fromEntries(new FormData(e.target))).then(out);
+  post('/auth/signup', Object.fromEntries(new FormData(e.target)))
+    .then(data => { out(data); if (data.user) window.location = '/dashboard'; });
 };
 document.getElementById('login').onsubmit = e => {
   e.preventDefault();
-  post('/auth/login', Object.fromEntries(new FormData(e.target))).then(out);
+  post('/auth/login', Object.fromEntries(new FormData(e.target)))
+    .then(data => { out(data); if (data.user) window.location = '/dashboard'; });
 };
 document.getElementById('logout').onclick = () => post('/auth/logout',{}).then(out);
 document.getElementById('me').onclick = () => fetch('/me').then(r=>r.json()).then(out);

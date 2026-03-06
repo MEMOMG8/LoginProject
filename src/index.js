@@ -21,6 +21,10 @@ app.get('/me', (req, res) => {
   if (!req.session.user) return res.status(401).json({ error: 'Not logged in' });
   res.json({ user: req.session.user });
 });
+app.get('/dashboard', (req, res) => {
+  if (!req.session.user) return res.redirect('/');
+  res.sendFile('dashboard.html', { root: 'public' });
+});
 app.get('/', (req, res) => res.send('OK'));
 const port = process.env.PORT || 3000;
 app.listen(port, () => console.log(`Server listening on http://localhost:${port}`));
